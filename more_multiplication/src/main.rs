@@ -26,17 +26,14 @@ fn main() {
     let mut digit_vec = sum_each_digit(&first_digits, &second_digits);
     digit_vec.push(format!("{:02}", product));
 
-
     print(first_digits, second_digits, digit_vec);
-
-
 }
 
 
 fn sum_each_digit(first:&Vec<i32>, second:&Vec<i32>) -> Vec<String> {
     let mut numbers:Vec<String> = Vec::new();
-    for &digit2 in first {
-        for &digit1 in second {
+    for &digit2 in second {
+        for &digit1 in first {
             let product = digit1 * digit2;
             numbers.push(format!("{:02}", product));
         }
@@ -64,17 +61,40 @@ fn print(first_digits:Vec<i32>, second_digits:Vec<i32>, digit_vec:Vec<String>) {
 
     for i in 0..num_rows {  // cols
         for j in 0..num_columns { // rows
-            if (i == 0 || i == num_rows - 1) && (j == 0 || j == num_columns - 1) {
+            if (i == 0 || i == num_rows - 1) && (j == 0 || j == num_columns - 1) { // corners
                 print!("+");
             } else if i == 0 || i == num_rows - 1 {
                 print!("-");
             } else if j == 0 || j == num_columns - 1 {
                 print!("|");
-            } else if i == 1 {
+            } else if i == 1 { // first row
                 if j % 4 == 0 {
                     print!("{}", first_digits[j / 4 - 1]);
                 } else {
                     print!(" ");
+                }
+            } else if i == 2 { // sec row
+                if j < 2 || j > num_columns - 3 {
+                    print!(" ");
+                } else {
+                    if (j - 2) % 4 == 0 {
+                        print!("+");
+                    } else {
+                        print!("-");
+                    }
+                }
+            } else if i == 3 { // third row
+                if j < 2 || j > num_columns - 3 || j % 4 == 0 {
+                    print!(" ");
+                } else {
+                    if (j - 2) % 4 == 0 {
+                        print!("|");
+                    } else if j > 3 && (j - 5) % 4 == 0 {
+                        print!("/");
+                    } else {
+                        let digit = digit_vec[j / 3 - 1].chars().nth(0).unwrap();
+                        print!("{}", digit);
+                    }
                 }
             }
 
