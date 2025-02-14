@@ -53,8 +53,17 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
         vertical_slots_available += 1;
     }
 
+    let lower_limit = 2;
+    let mut _range = 2;
+    let mut inner_box_index = 3;
+
     let sum_num_of_digits:usize = digit_vec.last().map(|s| s.len()).unwrap_or(0);
     let vertical_digits_needed = vertical_numbers_needed(sum_num_of_digits, num_columns);
+
+    for _ in 0..vertical_digits_needed {
+        _range += 4;
+    }
+
 
     for i in 0..num_rows {
         for j in 0..num_columns {
@@ -77,15 +86,18 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                     }
                 }
                 (1, _) => print!(" "),
-                (2, j) if j < 2 || j > num_columns - 3 => print!(" "),
-                (2, j) => match (j - 2) % 4 {
+
+                // the repetition logic from here
+
+                (i, j) if (i - 2) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3) => print!(" "),
+                (i, j) if (i - 2) % 4 == 0 && i <= _range => match (j - 2) % 4 {
                     0 => print!("+"),
                     _ => print!("-"),
                 },
 
-                (3, j) if j < 2 || j > num_columns - 3 || j % 4 == 0 => print!(" "),
-                (3, j) if (j - 2) % 4 == 0 => print!("|"),
-                (3, j) if j > 3 && (j - 5) % 4 == 0 => print!("/"),
+                (i, j) if (i - 3) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3 || j % 4 == 0) => print!(" "),
+                (i, j) if (i - 3) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"), // here I need to stop
+                (i, j) if (i - 3) % 4 == 0 && i <= _range && (j > 3 && (j - 5) % 4 == 0) => print!("/"),
                 (3, j) => {
                     let idx = j / 3 - 1;
                     if idx < digit_vec.len() {
@@ -101,19 +113,6 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                 (4, j) if (j - 2) % 4 == 0 => print!("|"),
                 (4, j) if j > 3 && (j - 4) % 4 == 0 => print!("/"),
 
-                // (5, j) if j == 1 && vertical_slots_available == vertical_digits_needed => {
-                //      if let Some( sum) = digit_vec.last_mut() {
-                //          if !sum.is_empty() {
-                //              let first_char = sum.remove(0); // Removes first char
-                //              println!("{}", first_char); // Print only the removed character
-                //          }
-                //      }
-                // }
-                // (5, j) if j == 1 && vertical_slots_available > vertical_digits_needed => {
-                //     vertical_slots_available -= 1;
-                //     continue;
-                // }
-
                 (5, j) if j > 1 && (j - 2) % 4 == 0 => {
                     print!("|")
                 }
@@ -123,7 +122,7 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                 (5, j ) if j > 3 && (j - 4) % 4 == 0 => {
                     print!(" ")
                 }
-                (5, j) if j > 1 => {
+                (5, j) if j > 1 && j < num_columns - 2 => {
                     let idx = j / 4 - 1;
                     if idx < digit_vec.len() {
                         let digit = digit_vec[idx].chars().nth(1).unwrap_or(' ');
