@@ -1,3 +1,4 @@
+use core::num;
 use std::io;
 use std::mem::forget;
 
@@ -72,7 +73,6 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
         for j in 0..num_columns {
             match (i, j) {
 
-                // Corners: top-left, top-right, bottom-left, bottom-right.
                 (i, j) if (i == 0 || i == num_rows - 1) && (j == 0 || j == num_columns - 1) => {
                     print!("+")
                 }
@@ -98,56 +98,71 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                     _ => print!("-"),
                 },
 
-                (i, j) if (i - 3) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3 || j % 4 == 0) => print!(" "),
-                (i, j) if (i - 3) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"), // here I need to stop
-                (i, j) if (i - 3) % 4 == 0 && i <= _range && (j > 3 && (j - 5) % 4 == 0) => print!("/"),
-                (3, j) => {
-                    let idx = j / 3 - 1;
-                    if idx < digit_vec.len() {
-                        // Use the first character of the corresponding string.
-                        let digit = digit_vec[idx].chars().next().unwrap_or(' ');
-                        print!("{}", digit);
+
+                (i, j) if j < num_columns - 2 && (i - 3) % 2 == 0 => { // 3, 5, 7, 9, 11...
+                    let row_idx = i / 2 - 1;
+                    let maybe_idx: Option<usize> = if row_idx % 2 == 0 {
+                        // For even rows: valid j are 3, 7, 11, …
+                        if j < 3 || ((j - 3) % 4 != 0) {
+                            None
+                        } else {
+                            Some((j - 3) / 4)
+                        }
                     } else {
-                        print!(" ");
+                        // For odd rows: valid j are 5, 9, 13, …
+                        if j < 5 || ((j - 5) % 4 != 0) {
+                            None
+                        } else {
+                            Some((j - 5) / 4)
+                        }
+                    };
+
+                    if let Some(idx) = maybe_idx {
+                        if idx < split_vec[row_idx].len() {
+                            let digit: String = split_vec[row_idx][idx].clone();
+                            print!("{}", digit);
+                        } else {
+                            print!(" ");
+                        }
+                    } else {
+                        match  (i,j) {
+                            (i, j) if (i - 3) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3 || j % 4 == 0) => print!(" "),
+                            (i, j) if (i - 3) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"), // here I need to stop
+                            (i, j) if (i - 3) % 4 == 0 && i <= _range && (j > 3 && (j - 5) % 4 == 0) => print!("/"),
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && (j > num_columns - 3) => print!(" "),
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j > 3 && (j - 4) % 4 == 0 => print!(" "),
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j >= 3 && (j - 3) % 4 == 0 => print!("/"),
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j > 1 && ((j - 2)) % 4 == 0 => print!("|"),
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
+                                if !final_product.is_empty() {
+                                    let first_char = final_product.remove(0);
+                                    print!("{}", first_char);
+                                }
+                            }
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
+                                vertical_slots_available -= 1;
+                                continue;
+                            }
+                            _ => print!(" "),
+                        }
                     }
                 },
-                (4, j) if j == num_columns - 2 => print!("{}", second_digits[i / 4 - 1]),
-                (4, j) if (j - 1) % 2 == 0 => print!(" "),
-                (4, j) if (j - 2) % 4 == 0 => print!("|"),
-                (4, j) if j > 3 && (j - 4) % 4 == 0 => print!("/"),
 
-                (5, j) if j > 1 && (j - 2) % 4 == 0 => {
-                    print!("|")
-                }
-                (5, j) if j > 1 && j < num_columns - 2 && (j - 3) % 4 == 0 => {
-                    print!("/")
-                }
-                (5, j ) if j > 3 && (j - 4) % 4 == 0 => {
-                    print!(" ")
-                }
-                (5, j) if j > 1 && j < num_columns - 2 => {
-                    let idx = j / 4 - 1;
-                    if idx < digit_vec.len() {
-                        let digit = digit_vec[idx].chars().nth(1).unwrap_or(' ');
-                        print!("{}", digit);
-                    } else {
-                        print!(" ");
-                    }
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3) => print!(" "),
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j > 2 && j < num_columns - 2) && j % 2 == 1 => print!(" "),
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"), // here I need to stop
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j > 3 && (j - 4) % 4 == 0) => print!("/"),
 
-                }
-                (5, j) if j == 1 && vertical_slots_available == vertical_digits_needed => {
-                    if !final_product.is_empty() {
-                        let first_char = final_product.remove(0);
-                        print!("{}", first_char);
-                    }
-                }
-                (5, j) if j == 1 && vertical_slots_available > vertical_digits_needed => {
-                    vertical_slots_available -= 1;
-                    continue;
-                }
-                // (5, j) if (j - 5) % 4 == 0 => {
-
-                //  }
+                // (i, j) if i >= 5 && j == 1 && vertical_slots_available == vertical_digits_needed => {
+                //     if !final_product.is_empty() {
+                //         let first_char = final_product.remove(0);
+                //         print!("{}", first_char);
+                //     }
+                // }
+                // (i, j) if i >= 5 && j == 1 && vertical_slots_available > vertical_digits_needed => {
+                //     vertical_slots_available -= 1;
+                //     continue;
+                // }
 
                 _ => print!(" "),
             }
@@ -160,11 +175,7 @@ fn split_digit_vec(digit_vec: Vec<String>, vertical_digits_needed:usize) -> (Vec
     let mut final_split_vec: Vec<Vec<String>> = Vec::new(); 
     let mut split_vec: Vec<Vec<String>> = split_into_chunks(digit_vec.clone(), vertical_digits_needed);
 
-    let rows_needed = vertical_digits_needed + vertical_digits_needed;
-
     // split digit_vec into rows with vertical_digits_needed number of digits
-
-
     for i in 0..split_vec.len() {
         let mut row_first = Vec::new();
         let mut row_second = Vec::new();
