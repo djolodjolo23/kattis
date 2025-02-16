@@ -15,7 +15,8 @@ fn main() {
     //     .collect();
     //
     //
-    //®
+    //®868
+
 
     let first_num = 345;
     let second_num = 56;
@@ -42,7 +43,7 @@ fn sum_each_digit(first:&Vec<i32>, second:&Vec<i32>) -> Vec<String> {
     numbers
 }
 
-fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<String>) {
+fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec<String>) {
     let mut num_columns = 0;
     let mut num_rows = 0;
     let mut vertical_slots_available = 0;
@@ -54,13 +55,11 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
         vertical_slots_available += 1;
     }
 
-    let lower_limit = 2;
     let mut _range = 2;
-    let mut inner_box_index = 3;
     let mut final_product = digit_vec.pop().unwrap();
 
-    let sum_num_of_digits:usize = final_product.len();
-    let vertical_digits_needed = vertical_numbers_needed(sum_num_of_digits, num_columns);
+    let num_of_digits_sum:usize = final_product.len();
+    let mut vertical_digits_needed = vertical_numbers_needed(num_of_digits_sum, num_columns);
 
     let split_vec = split_digit_vec(digit_vec.clone(), vertical_digits_needed);
 
@@ -99,7 +98,7 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                 },
 
 
-                (i, j) if j < num_columns - 2 && (i - 3) % 2 == 0 => { // 3, 5, 7, 9, 11...
+                (i, j) if j < num_columns - 2 && (i - 3) % 2 == 0 && i < _range => { // 3, 5, 7, 9, 11...
                     let row_idx = i / 2 - 1;
                     let maybe_idx: Option<usize> = if row_idx % 2 == 0 {
                         // For even rows: valid j are 3, 7, 11, …
@@ -125,18 +124,24 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                             print!(" ");
                         }
                     } else {
-                        match  (i,j) {
+                        match (i,j) {
+                            (i, j) if i >= 7 && (i - 7) % 4 == 0 && i <= _range && j == 1 => print!("/"),
+
                             (i, j) if (i - 3) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3 || j % 4 == 0) => print!(" "),
-                            (i, j) if (i - 3) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"), // here I need to stop
+                            (i, j) if (i - 3) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"),
                             (i, j) if (i - 3) % 4 == 0 && i <= _range && (j > 3 && (j - 5) % 4 == 0) => print!("/"),
+
                             (i, j) if (i - 5) % 4 == 0 && i <= _range && (j > num_columns - 3) => print!(" "),
                             (i, j) if (i - 5) % 4 == 0 && i <= _range && j > 3 && (j - 4) % 4 == 0 => print!(" "),
                             (i, j) if (i - 5) % 4 == 0 && i <= _range && j >= 3 && (j - 3) % 4 == 0 => print!("/"),
                             (i, j) if (i - 5) % 4 == 0 && i <= _range && j > 1 && ((j - 2)) % 4 == 0 => print!("|"),
-                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
+
+
+                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => { //TODO: here I need to check how to crate a logic for printing the final product
                                 if !final_product.is_empty() {
                                     let first_char = final_product.remove(0);
                                     print!("{}", first_char);
+                                    vertical_digits_needed -= 1;
                                 }
                             }
                             (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
@@ -148,21 +153,31 @@ fn print(first_digits: Vec<i32>, second_digits: Vec<i32>, mut digit_vec: Vec<Str
                     }
                 },
 
-                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3) => print!(" "),
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j < 2) => print!(" "),
                 (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j > 2 && j < num_columns - 2) && j % 2 == 1 => print!(" "),
-                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"), // here I need to stop
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"),
                 (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && (j > 3 && (j - 4) % 4 == 0) => print!("/"),
+                (i, j) if i >= 4 && (i - 4) % 4 == 0 && i <= _range && j == num_columns - 2 => print!("{}", second_digits.remove(0)),
 
-                // (i, j) if i >= 5 && j == 1 && vertical_slots_available == vertical_digits_needed => {
-                //     if !final_product.is_empty() {
-                //         let first_char = final_product.remove(0);
-                //         print!("{}", first_char);
-                //     }
-                // }
-                // (i, j) if i >= 5 && j == 1 && vertical_slots_available > vertical_digits_needed => {
-                //     vertical_slots_available -= 1;
-                //     continue;
-                // }
+                (i, j) if i == _range + 1 => {
+                    match (i, j) {
+                        (i, j) if (j - 1) % 4 == 0 && final_product.chars().count() < num_of_digits_sum && final_product.chars().count() > 0 => {
+
+                            print!("/");
+                        }
+                        (i, j) if j >= 3 && (j - 3) % 4 == 0 => {
+                            let idx = (j - 3) / 4;
+                            if !final_product.is_empty() {
+                                let digit = final_product.remove(0);
+                                print!("{}", digit);
+                            } else {
+                                print!(" ");
+                            }
+                        }
+
+                        _ => print!(" "),
+                    }
+                }
 
                 _ => print!(" "),
             }
@@ -190,14 +205,15 @@ fn split_digit_vec(digit_vec: Vec<String>, vertical_digits_needed:usize) -> (Vec
 }
 
 fn split_into_chunks(digit_vec: Vec<String>, vertical_digits_needed: usize) -> Vec<Vec<String>> {
-    let chunk_size = digit_vec.len() / vertical_digits_needed; // Compute chunk size
+    let chunk_size = digit_vec.len() / vertical_digits_needed;
     let mut split_vec = Vec::new();
 
     for i in 0..vertical_digits_needed {
         let start = i * chunk_size;
         let end = start + chunk_size;
-        split_vec.push(digit_vec[start..end].to_vec()); // Push each chunk
+        split_vec.push(digit_vec[start..end].to_vec());
     }
+
 
     split_vec
 }
