@@ -18,8 +18,8 @@ fn main() {
     //®868
 
 
-    let first_num = 345;
-    let second_num = 56;
+    let first_num = 12;
+    let second_num = 27;
     let product = first_num * second_num;
 
     let first_digits: Vec<i32> = first_num.to_string().chars().map(|d| d.to_digit(10).unwrap() as i32).collect();
@@ -47,25 +47,24 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
     let mut num_columns = 0;
     let mut num_rows = 0;
     let mut vertical_slots_available = 0;
+    let mut _range = 2;
     for i in 0..first_digits.len() {
         num_columns += if i == 0 { 9 } else { 4 };
     }
     for j in 0..second_digits.len() {
         num_rows += if j == 0 { 9 } else { 4 };
         vertical_slots_available += 1;
+        _range += 4;
     }
 
-    let mut _range = 2;
     let mut final_product = digit_vec.pop().unwrap();
 
     let num_of_digits_sum:usize = final_product.len();
-    let mut vertical_digits_needed = vertical_numbers_needed(num_of_digits_sum, num_columns);
+    let vertical_digits_needed = vertical_numbers_needed(num_of_digits_sum, num_columns);
 
-    let split_vec = split_digit_vec(digit_vec.clone(), vertical_digits_needed);
+    let mut right_digits = second_digits.len();
 
-    for _ in 0..vertical_digits_needed {
-        _range += 4;
-    }
+    let split_vec = split_digit_vec(digit_vec.clone(), second_digits.len());
 
 
     for i in 0..num_rows {
@@ -99,7 +98,8 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
 
 
                 (i, j) if j < num_columns - 2 && (i - 3) % 2 == 0 && i < _range => { // 3, 5, 7, 9, 11...
-                    let row_idx = i / 2 - 1;
+                    // breaks on 7 3
+                    let row_idx = i / 2 - 1; // this index is problematic
                     let maybe_idx: Option<usize> = if row_idx % 2 == 0 {
                         // For even rows: valid j are 3, 7, 11, …
                         if j < 3 || ((j - 3) % 4 != 0) {
@@ -115,9 +115,9 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
                             Some((j - 5) / 4)
                         }
                     };
-
+                    
                     if let Some(idx) = maybe_idx {
-                        if idx < split_vec[row_idx].len() {
+                        if idx < split_vec[row_idx].len() { // here it breaks, the length is 2 but the index is 2
                             let digit: String = split_vec[row_idx][idx].clone();
                             print!("{}", digit);
                         } else {
@@ -125,7 +125,9 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
                         }
                     } else {
                         match (i,j) {
-                            (i, j) if i >= 7 && (i - 7) % 4 == 0 && i <= _range && j == 1 => print!("/"),
+                            (i, j) if i >= 7 && (i - 7) % 4 == 0 && i <= _range && j == 1 => {
+                                print!("/") // TODO: Here I need logic to not print the "/" if there are no digits above
+                            },
 
                             (i, j) if (i - 3) % 4 == 0 && i <= _range && (j < 2 || j > num_columns - 3 || j % 4 == 0) => print!(" "),
                             (i, j) if (i - 3) % 4 == 0 && i <= _range && ((j - 2) % 4 == 0) => print!("|"),
@@ -138,16 +140,18 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
 
 
                             (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => { //TODO: here I need to check how to crate a logic for printing the final product
-                                if !final_product.is_empty() {
+                                if !final_product.is_empty() && vertical_slots_available == vertical_digits_needed {
                                     let first_char = final_product.remove(0);
                                     print!("{}", first_char);
-                                    vertical_digits_needed -= 1;
+                                } else {
+                                    print!(" ");
+                                    vertical_slots_available -= 1;
                                 }
                             }
-                            (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
-                                vertical_slots_available -= 1;
-                                continue;
-                            }
+                            // (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
+                            //     vertical_slots_available -= 1;
+                            //     continue;
+                            // }
                             _ => print!(" "),
                         }
                     }
@@ -161,12 +165,10 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
 
                 (i, j) if i == _range + 1 => {
                     match (i, j) {
-                        (i, j) if (j - 1) % 4 == 0 && final_product.chars().count() < num_of_digits_sum && final_product.chars().count() > 0 => {
-
+                        (_i, j) if (j - 1) % 4 == 0 && final_product.chars().count() < num_of_digits_sum && final_product.chars().count() > 0 => {
                             print!("/");
                         }
-                        (i, j) if j >= 3 && (j - 3) % 4 == 0 => {
-                            let idx = (j - 3) / 4;
+                        (_i, j) if j >= 3 && (j - 3) % 4 == 0 => {
                             if !final_product.is_empty() {
                                 let digit = final_product.remove(0);
                                 print!("{}", digit);
@@ -186,9 +188,9 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
     }
 }
 
-fn split_digit_vec(digit_vec: Vec<String>, vertical_digits_needed:usize) -> (Vec<Vec<String>>) {
+fn split_digit_vec(digit_vec: Vec<String>, sec_digits_length:usize) -> (Vec<Vec<String>>) {
     let mut final_split_vec: Vec<Vec<String>> = Vec::new(); 
-    let mut split_vec: Vec<Vec<String>> = split_into_chunks(digit_vec.clone(), vertical_digits_needed);
+    let split_vec: Vec<Vec<String>> = split_into_chunks(digit_vec.clone(), sec_digits_length);
 
     // split digit_vec into rows with vertical_digits_needed number of digits
     for i in 0..split_vec.len() {
@@ -204,11 +206,11 @@ fn split_digit_vec(digit_vec: Vec<String>, vertical_digits_needed:usize) -> (Vec
     final_split_vec
 }
 
-fn split_into_chunks(digit_vec: Vec<String>, vertical_digits_needed: usize) -> Vec<Vec<String>> {
-    let chunk_size = digit_vec.len() / vertical_digits_needed;
+fn split_into_chunks(digit_vec: Vec<String>, sec_digits_length: usize) -> Vec<Vec<String>> {
+    let chunk_size = digit_vec.len() / sec_digits_length;
     let mut split_vec = Vec::new();
 
-    for i in 0..vertical_digits_needed {
+    for i in 0..sec_digits_length { 
         let start = i * chunk_size;
         let end = start + chunk_size;
         split_vec.push(digit_vec[start..end].to_vec());
@@ -220,6 +222,6 @@ fn split_into_chunks(digit_vec: Vec<String>, vertical_digits_needed: usize) -> V
 
 
 fn vertical_numbers_needed(total_digits: usize, columns:usize) -> usize {
-    total_digits - (columns / total_digits)
+    columns % total_digits
 }
 
