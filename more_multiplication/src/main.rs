@@ -1,6 +1,7 @@
 use core::num;
 use std::io;
 use std::mem::forget;
+use std::path::absolute;
 
 fn main() {
     // let mut input = String::new();
@@ -18,8 +19,8 @@ fn main() {
     //®868
 
 
-    let first_num = 12;
-    let second_num = 27;
+    let first_num = 3;
+    let second_num = 3;
     let product = first_num * second_num;
 
     let first_digits: Vec<i32> = first_num.to_string().chars().map(|d| d.to_digit(10).unwrap() as i32).collect();
@@ -48,6 +49,9 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
     let mut num_rows = 0;
     let mut vertical_slots_available = 0;
     let mut _range = 2;
+
+    let mut first_sum_digit_written = false;
+
     for i in 0..first_digits.len() {
         num_columns += if i == 0 { 9 } else { 4 };
     }
@@ -57,12 +61,20 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
         _range += 4;
     }
 
-    let mut final_product = digit_vec.pop().unwrap();
+    let mut final_product = digit_vec.pop().unwrap(); 
+    final_product = final_product.trim_start_matches('0').to_string();
+    if final_product.is_empty() {
+        final_product = "0".to_string(); 
+    }
+    
 
     let num_of_digits_sum:usize = final_product.len();
-    let vertical_digits_needed = vertical_numbers_needed(num_of_digits_sum, num_columns);
 
-    let mut right_digits = second_digits.len();
+    let vertical_digits_needed = if first_digits.len() < num_of_digits_sum {
+        (num_of_digits_sum - first_digits.len()) as usize
+    } else {
+        0
+    };
 
     let split_vec = split_digit_vec(digit_vec.clone(), second_digits.len());
 
@@ -125,7 +137,7 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
                         }
                     } else {
                         match (i,j) {
-                            (i, j) if i >= 7 && (i - 7) % 4 == 0 && i <= _range && j == 1 => {
+                            (i, j) if i >= 7 && (i - 7) % 4 == 0 && i <= _range && j == 1 && first_sum_digit_written => {
                                 print!("/") // TODO: Here I need logic to not print the "/" if there are no digits above
                             },
 
@@ -143,6 +155,7 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
                                 if !final_product.is_empty() && vertical_slots_available == vertical_digits_needed {
                                     let first_char = final_product.remove(0);
                                     print!("{}", first_char);
+                                    first_sum_digit_written = true;
                                 } else {
                                     print!(" ");
                                     vertical_slots_available -= 1;
@@ -218,10 +231,5 @@ fn split_into_chunks(digit_vec: Vec<String>, sec_digits_length: usize) -> Vec<Ve
 
 
     split_vec
-}
-
-
-fn vertical_numbers_needed(total_digits: usize, columns:usize) -> usize {
-    columns % total_digits
 }
 
