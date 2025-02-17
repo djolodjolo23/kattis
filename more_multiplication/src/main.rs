@@ -1,32 +1,46 @@
+
 use std::io;
 
 fn main() {
     let mut input = String::new();
     
-    io::stdin().read_line(&mut input)
-        .expect("Failed to read line");
-    
-    let numbers: Vec<i32> = input
-        .trim()
-        .split_whitespace()
-        .map(|num| num.parse().expect("Not a number"))
-        .collect();
-    
-    let first_num = numbers[0];
-    let second_num = numbers[1];
-    
-    
-    //let first_num = 345;
-    //let second_num = 56;
-    let product = first_num * second_num;
+    while io::stdin().read_line(&mut input).is_ok() {
+        let numbers: Vec<i32> = input
+            .trim()
+            .split_whitespace()
+            .filter_map(|num| num.parse().ok())  
+            .collect();
+        
+        if numbers.len() != 2 {
+            break; 
+        }
 
-    let first_digits: Vec<i32> = first_num.to_string().chars().map(|d| d.to_digit(10).unwrap() as i32).collect();
-    let second_digits: Vec<i32> = second_num.to_string().chars().map(|d| d.to_digit(10).unwrap() as i32).collect();
+        let first_num = numbers[0];
+        let second_num = numbers[1];
 
-    let mut digit_vec = sum_each_digit(&first_digits, &second_digits);
-    digit_vec.push(format!("{:02}", product));
+        if first_num == 0 && second_num == 0 {
+            break; 
+        }
+        
+        let product = first_num * second_num;
 
-    print(first_digits, second_digits, digit_vec);
+        let first_digits: Vec<i32> = first_num.to_string()
+            .chars()
+            .map(|d| d.to_digit(10).unwrap() as i32)
+            .collect();
+
+        let second_digits: Vec<i32> = second_num.to_string()
+            .chars()
+            .map(|d| d.to_digit(10).unwrap() as i32)
+            .collect();
+
+        let mut digit_vec = sum_each_digit(&first_digits, &second_digits);
+        digit_vec.push(product.to_string());
+
+        print(first_digits, second_digits, digit_vec);
+
+        input.clear(); 
+    }
 }
 
 
