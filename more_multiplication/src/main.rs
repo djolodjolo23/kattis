@@ -1,26 +1,23 @@
-use core::num;
 use std::io;
-use std::mem::forget;
-use std::path::absolute;
 
 fn main() {
-    // let mut input = String::new();
-    //
-    // io::stdin().read_line(&mut input)
-    //     .expect("Failed to read line");
-    //
-    // let numbers: Vec<i32> = input
-    //     .trim()
-    //     .split_whitespace()
-    //     .map(|num| num.parse().expect("Not a number"))
-    //     .collect();
-    //
-    //
-    //®868
-
-
-    let first_num = 3;
-    let second_num = 3;
+    let mut input = String::new();
+    
+    io::stdin().read_line(&mut input)
+        .expect("Failed to read line");
+    
+    let numbers: Vec<i32> = input
+        .trim()
+        .split_whitespace()
+        .map(|num| num.parse().expect("Not a number"))
+        .collect();
+    
+    let first_num = numbers[0];
+    let second_num = numbers[1];
+    
+    
+    //let first_num = 345;
+    //let second_num = 56;
     let product = first_num * second_num;
 
     let first_digits: Vec<i32> = first_num.to_string().chars().map(|d| d.to_digit(10).unwrap() as i32).collect();
@@ -161,10 +158,6 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
                                     vertical_slots_available -= 1;
                                 }
                             }
-                            // (i, j) if (i - 5) % 4 == 0 && i <= _range && j == 1 => {
-                            //     vertical_slots_available -= 1;
-                            //     continue;
-                            // }
                             _ => print!(" "),
                         }
                     }
@@ -201,7 +194,7 @@ fn print(first_digits: Vec<i32>, mut second_digits: Vec<i32>, mut digit_vec: Vec
     }
 }
 
-fn split_digit_vec(digit_vec: Vec<String>, sec_digits_length:usize) -> (Vec<Vec<String>>) {
+fn split_digit_vec(digit_vec: Vec<String>, sec_digits_length:usize) -> Vec<Vec<String>> {
     let mut final_split_vec: Vec<Vec<String>> = Vec::new(); 
     let split_vec: Vec<Vec<String>> = split_into_chunks(digit_vec.clone(), sec_digits_length);
 
