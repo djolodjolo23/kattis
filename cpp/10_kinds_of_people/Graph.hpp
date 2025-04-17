@@ -18,11 +18,11 @@ public:
         int m_row;
         int m_column;
         char m_value;
+        string m_label;
         vector<Node*> neighbors;
 
-        Node(int row, int column, char value);
+        Node(int row, int column, char value, string label);
 
-        void addNeighbors(vector<Node*> nodes);
     };
 
     int m_rows;
@@ -30,6 +30,8 @@ public:
     vector<Node*> m_nodes;
 
     Graph(const vector<string>& matrix);
+
+    Node* getNode(int row, int column) const;
 
     ~Graph();
 };
